@@ -2,21 +2,29 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>东莞理工学院——健康情况统计系统</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
   
     * {
-        box-sizing: border-box;
-        margin: 0;
-        font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Microsoft YaHei', 'Heiti SC', 'Segoe UI', Roboto, system-ui, sans-serif;
     }
     body {
-        background: #f4f7fb;
-        padding: 24px;
+       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #F5F7FA;
+      background: #f4f7fb;
+      color: #333647;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+      min-height: 100vh;
+      padding: 24px;
     }
+   
     h1 {
         font-weight: 400;
         font-size: 2rem;
@@ -34,6 +42,17 @@
         grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: 24px;
     }
+    @media (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .card {
+            padding: 1rem; /* 适配修改：手机端减少卡片内边距 */
+            margin: 0.5rem 0; /* 适配修改：减少卡片间距 */
+        }
+    }
+
     .card {
         background: white;
         border-radius: 20px;
@@ -117,20 +136,9 @@
     }
 
   /* 全局样式重置与基础设置 */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Microsoft YaHei', 'Heiti SC', sans-serif;
-    }
     
-    body {
-      background-color: #F5F7FA;
-      color: #333647;
-      line-height: 1.6;
-      scroll-behavior: smooth;
-      min-height: 100vh;
-    }
+    
+    
     
     .container {
       width: 100%;
@@ -466,7 +474,7 @@
         <h1>📊 学生健康指标分布</h1>
         <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
         <disv class="loading" id="loading">正在加载数据并绘制图表...</disv>
-        <div class="grid" id="chartGrid" style="display: none;"></div>
+        <div class="grid" id="chartGrid" style="display: none;grid-template-columns: 1fr; gap: 1rem; width: 100%;"></div>
         <footer>
             ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
         </footer>
@@ -671,14 +679,22 @@
                     const card = document.createElement('div');
                     card.className = 'card';
 
+                    // 适配修改：卡片样式优化，手机端更紧凑
+                    card.style.padding = '0.8rem';
+                    card.style.marginBottom = '1rem';
+
                     // 标题
                     const titleDiv = document.createElement('h2');
                     titleDiv.innerHTML = `${m.title}分布 <span>${m.unit}</span>`;
+                    titleDiv.style.fontSize = '1.1rem';
+                    titleDiv.style.marginBottom = '0.6rem';
                     card.appendChild(titleDiv);
 
                     // 统计信息
                     const statsDiv = document.createElement('div');
                     statsDiv.className = 'stats';
+                    statsDiv.style.fontSize = '0.85rem';
+                    statsDiv.style.gap = '0.5rem';
                     statsDiv.innerHTML = `
                         <div class="stat-item">
                             <div class="stat-label">样本数</div>
@@ -698,6 +714,8 @@
                     // canvas容器
                     const canvasDiv = document.createElement('div');
                     canvasDiv.className = 'canvas-container';
+                    canvasDiv.style.height = '200px';
+
                     const canvas = document.createElement('canvas');
                     canvas.id = `chart-${m.key}`;
                     canvasDiv.appendChild(canvas);
@@ -740,18 +758,39 @@
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: { mode: 'index', intersect: false }
+                                tooltip: { mode: 'index', 
+                                intersect: false,
+                                bodyFont: { size: 10 },
+                                titleFont: { size: 11 }
+                              }
                             },
                             scales: {
                                 x: {
                                     grid: { display: false },
-                                    title: { display: true, text: m.title, color: '#3a5e7a' }
+                                    title: {
+                                        display: true, 
+                                        text: m.title, 
+                                        color: '#3a5e7a', 
+                                        font: { size: 10 }
+                                    },
+                                    ticks: {
+                                        // 适配修改：X轴刻度字体缩小，避免重叠
+                                        font: { size: 9 },
+                                        maxRotation: 0, // 取消旋转
+                                        autoSkip: true,
+                                        maxTicksLimit: 6 // 限制显示数量
+                                    }
                                 },
+
                                 y: {
                                     beginAtZero: true,
                                     grid: { color: '#e9eef3' },
-                                    title: { display: true, text: '频数', color: '#3a5e7a' }
-                                }
+                                    title: { display: true, text: '频数', color: '#3a5e7a',font: { size: 10 } },
+                                    ticks: {
+                                                // 适配修改：Y轴刻度字体缩小
+                                                font: { size: 9 }
+                                            }
+                                  }
                             }
                         }
                     });
@@ -775,8 +814,14 @@
     <section id="page3" class="hidden page-content animate-fade-in">
       <div class="card">
         <h1>随机抽取10条学生数据（体重与BMI）</h1>
-        <button onclick="loadAndPlot()">重新抽取</button>
-        <canvas id="myChart" width="400" height="200"></canvas>
+        <!-- <button onclick="loadAndPlot()">重新抽取</button>
+        <canvas id="myChart" width="400" height="200"></canvas> -->
+        <!-- 适配修改：按钮样式优化，手机端更易点击 -->
+        <button onclick="loadAndPlot()" style="margin-bottom: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem;">重新抽取</button>
+        <!-- 适配修改：图表容器优化，手机端自适应 -->
+        <div style="width: 100%; height: 280px; margin-bottom: 1rem;">
+            <canvas id="myChart" style="width: 100%; height: 100%;"></canvas>
+        </div>
 
         <script>
           // 学生图表专用全局变量
@@ -832,9 +877,39 @@
                       ]
                     },
                     options: {
+                      responsive: true,
+                      maintainAspectRatio: false, // 适配修改：取消固定宽高比
+                      plugins: {
+                          tooltip: {
+                              // 适配修改：提示框字体缩小
+                              bodyFont: { size: 10 },
+                              titleFont: { size: 11 }
+                          }
+                      },
                       scales: {
-                        y: { beginAtZero: true, title: { display: true, text: '数值' } },
-                        x: { title: { display: true, text: '学生ID' } }
+                        y: { beginAtZero: true, 
+                        title: { 
+                          display: true, 
+                          text: '数值' ,
+                          font: { size: 10 }
+                        },
+                        ticks: {
+                            // 适配修改：刻度字体缩小
+                            font: { size: 9 } }},
+                        x: { 
+                          title: { 
+                            display: true,
+                            text: '学生ID',
+                            font: { size: 10 }
+                          },
+                          ticks: {
+                              // 适配修改：刻度字体缩小，取消旋转
+                              font: { size: 9 },
+                              maxRotation: 0,
+                              autoSkip: true
+                          }
+
+                        }
                       }
                     }
                   });
@@ -874,7 +949,7 @@
         <h1>📊 教师健康指标分布</h1>
         <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
         <div class="loading" id="loading-teacher">正在加载数据并绘制图表...</div>
-        <div class="grid" id="chartGrid-teacher" style="display: none;"></div>
+        <div class="grid" id="chartGrid-teacher" style="display: none; grid-template-columns: 1fr; gap: 1rem; width: 100%;"></div>
         <footer>
             ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
         </footer>
@@ -1076,15 +1151,21 @@
                         // 创建卡片元素
                         const card = document.createElement('div');
                         card.className = 'card';
+                        card.style.padding = '0.8rem';
+                        card.style.marginBottom = '1rem';
 
                         // 标题
                         const titleDiv = document.createElement('h2');
                         titleDiv.innerHTML = `${m.title}分布 <span>${m.unit}</span>`;
+                        titleDiv.style.fontSize = '1.1rem';
+                        titleDiv.style.marginBottom = '0.6rem';
                         card.appendChild(titleDiv);
 
                         // 统计信息
                         const statsDiv = document.createElement('div');
                         statsDiv.className = 'stats';
+                        statsDiv.style.fontSize = '0.85rem';
+                        statsDiv.style.gap = '0.5rem';
                         statsDiv.innerHTML = `
                             <div class="stat-item">
                                 <div class="stat-label">样本数</div>
@@ -1104,6 +1185,8 @@
                         // canvas容器
                         const canvasDiv = document.createElement('div');
                         canvasDiv.className = 'canvas-container';
+                        canvasDiv.style.height = '200px';
+
                         const canvas = document.createElement('canvas');
                         canvas.id = `teacher-chart-${m.key}`; // 教师专属Canvas ID
                         canvasDiv.appendChild(canvas);
@@ -1146,17 +1229,33 @@
                                 maintainAspectRatio: false,
                                 plugins: {
                                     legend: { display: false },
-                                    tooltip: { mode: 'index', intersect: false }
+                                    tooltip: {
+                                      mode: 'index', 
+                                      intersect: false ,
+                                      bodyFont: { size: 10 },
+                                      titleFont: { size: 11 }
+                                    }
                                 },
                                 scales: {
                                     x: {
                                         grid: { display: false },
-                                        title: { display: true, text: m.title, color: '#3a5e7a' }
+                                        title: { display: true, text: m.title, color: '#3a5e7a',font: { size: 10 } },
+                                        ticks: {
+                                            // 适配修改：刻度字体缩小，取消旋转
+                                            font: { size: 9 },
+                                            maxRotation: 0,
+                                            autoSkip: true,
+                                            maxTicksLimit: 6
+                                        }
                                     },
                                     y: {
                                         beginAtZero: true,
                                         grid: { color: '#e9eef3' },
-                                        title: { display: true, text: '频数', color: '#3a5e7a' }
+                                        title: { display: true, text: '频数', color: '#3a5e7a',font: { size: 10 } },
+                                        ticks: {
+                                            // 适配修改：刻度字体缩小
+                                            font: { size: 9 }
+                                        } 
                                     }
                                 }
                             }
@@ -1182,8 +1281,13 @@
     <section id="page5" class="hidden page-content animate-fade-in">
       <div class="card"> 
         <h1>随机抽取10条教师数据（体重与BMI）</h1>
-        <button onclick="loadAndPlot_teacher()">重新抽取</button>
-        <canvas id="my_teacher" width="400" height="200"></canvas>
+        <!-- <button onclick="loadAndPlot_teacher()">重新抽取</button>
+        <canvas id="my_teacher" width="400" height="200"></canvas> -->
+        <button onclick="loadAndPlot_teacher()" style="margin-bottom: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem;">重新抽取</button>
+            <!-- 适配修改：图表容器优化 -->
+        <div style="width: 100%; height: 280px; margin-bottom: 1rem;">
+            <canvas id="my_teacher" style="width: 100%; height: 100%;"></canvas>
+        </div>
         <script>
           // 教师图表专用全局变量（避免和学生冲突）
           let teacherChart = null;
@@ -1240,9 +1344,35 @@
                       ]
                     },
                     options: {
+                      responsive: true,
+                      maintainAspectRatio: false, // 适配修改：取消固定宽高比
+                      plugins: {
+                          tooltip: {
+                              // 适配修改：提示框字体缩小
+                              bodyFont: { size: 10 },
+                              titleFont: { size: 11 }
+                          }
+                      },
                       scales: {
-                        y: { beginAtZero: true, title: { display: true, text: '数值' } },
-                        x: { title: { display: true, text: '教师ID' } }
+                        y: { beginAtZero: true, title: { display: true, text: '数值',font: { size: 10 } },
+                          ticks: {
+                              // 适配修改：刻度字体缩小
+                              font: { size: 9 }
+                          }
+                        },
+                        x: { 
+                            title: { 
+                              display: true, 
+                              text: '教师ID',
+                              font: { size: 10 }
+                            },
+                            ticks: {
+                                // 适配修改：刻度字体缩小，取消旋转
+                                font: { size: 9 },
+                                maxRotation: 0,
+                                autoSkip: true
+                            }
+                        }
                       }
                     }
                   });
@@ -1284,7 +1414,7 @@
         <h2 class="page-title">生成失败</h2>
         <p class="page-desc">
           目标所需数据丢失了<br>
-          请重新选择调查目标或等待改目标数据恢复
+          请重新选择调查目标或等待目标数据恢复
         </p>
         <div class="flex justify-center gap-4">
           <button id="back-btn-1" class="btn btn-secondary">
@@ -1362,9 +1492,11 @@
       
       // 定义跳转规则（匹配到对应页面ID）
       let targetPageId = 'default-page';
-      if (option1 === 'mkszy' || option1 === 'qt') {
+      if (option1 === 'mkszy') {
         targetPageId = 'page1';
-      } else if (option1 === 'smjk' && option2 === 'students' && option3 === 'qb') {
+      }else if (option1=== 'qt') {
+        targetPageId = 'page1'; 
+      }else if (option1 === 'smjk' && option2 === 'students' && option3 === 'qb') {
         targetPageId = 'page2';
       } else if (option1 === 'smjk' && option2 === 'students' && option3 === 'sj') {
         targetPageId = 'page3';
