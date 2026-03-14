@@ -450,7 +450,7 @@
         <h2 class="page-title">生成失败</h2>
         <p class="page-desc">
           目标所需数据丢失了<br>
-          请重新选择调查目标或等待改目标数据恢复
+          请重新选择调查目标或等待数据收集人员将数据恢复
         </p>
         <div class="flex justify-center gap-4">
           <button id="back-btn-1" class="btn btn-secondary">
@@ -463,12 +463,12 @@
     <!-- 模拟跳转页面2 -->
     <section id="page2" class="hidden page-content animate-fade-in">
       <div class="card">
-        <h1>📊 学生健康指标分布（基于真实数据）</h1>
-        <div class="sub">直方图 + 核密度估计 · 数据来自 students_data.csv</div>
-        <div class="loading" id="loading">正在加载数据并绘制图表...</div>
+        <h1>📊 学生健康指标分布</h1>
+        <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
+        <disv class="loading" id="loading">正在加载数据并绘制图表...</disv>
         <div class="grid" id="chartGrid" style="display: none;"></div>
         <footer>
-            ⚕️ 核密度使用高斯核 (带宽自适应) · 统计信息基于非空样本
+            ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
         </footer>
 
         <script>
@@ -871,12 +871,12 @@
     <section id="page4" class="hidden page-content animate-fade-in">
       <div class="card">
         
-        <h1>📊 教师健康指标分布（基于真实数据）</h1>
-        <div class="sub">直方图 + 核密度估计 · 数据来自 teacher_data.csv</div>
+        <h1>📊 教师健康指标分布</h1>
+        <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
         <div class="loading" id="loading-teacher">正在加载数据并绘制图表...</div>
         <div class="grid" id="chartGrid-teacher" style="display: none;"></div>
         <footer>
-            ⚕️ 核密度使用高斯核 (带宽自适应) · 统计信息基于非空样本
+            ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
         </footer>
 
         <script>
@@ -1297,8 +1297,8 @@
   
   <footer class="footer">
     <div class="container">
-      <p class="footer-text">© 2025 吞咽能力评估系统 - 本评估结果仅供参考，不构成医疗建议</p>
-      <p class="footer-text">如有疑问，请咨询专业医护人员</p>
+      <p class="footer-text">© 2026 健康统计系统 - 本次统计结果仅供参考</p>
+      <p class="footer-text">如有疑问，请咨询数据收集人员</p>
     </div>
   </footer>
 
