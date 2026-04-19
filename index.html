@@ -1,1529 +1,372 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>东莞理工学院——健康情况统计系统</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-  
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Microsoft YaHei', 'Heiti SC', 'Segoe UI', Roboto, system-ui, sans-serif;
-    }
-    body {
-       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #F5F7FA;
-      background: #f4f7fb;
-      color: #333647;
-      line-height: 1.6;
-      scroll-behavior: smooth;
-      min-height: 100vh;
-      padding: 24px;
-    }
-   
-    h1 {
-        font-weight: 400;
-        font-size: 2rem;
-        color: #1e2b3c;
-        margin-bottom: 8px;
-    }
-    .sub {
-        color: #4a5a6e;
-        margin-bottom: 32px;
-        border-left: 4px solid #2b7fc1;
-        padding-left: 16px;
-    }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 24px;
-    }
-    @media (max-width: 768px) {
-        .grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>东莞理工学院——健康情况统计系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
         }
-        .card {
-            padding: 1rem; /* 适配修改：手机端减少卡片内边距 */
-            margin: 0.5rem 0; /* 适配修改：减少卡片间距 */
+        body {
+            padding: 30px;
+            background: #f5f7fa;
         }
-    }
-
-    .card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,20,40,0.05);
-        padding: 20px 20px 24px;
-        transition: 0.2s;
-        border: 1px solid #eef2f6;
-        display: flex;
-        flex-direction: column;
-    }
-    .card:hover {
-        box-shadow: 0 16px 28px rgba(0,30,60,0.08);
-    }
-    .card h2 {
-        font-size: 1.3rem;
-        font-weight: 500;
-        margin: 0 0 8px 0;
-        color: #1e3b5c;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .card h2 span {
-        background: #e7edf5;
-        font-size: 0.75rem;
-        font-weight: 400;
-        padding: 2px 10px;
-        border-radius: 30px;
-        color: #2f4b70;
-    }
-    .stats {
-        background: #f9fcff;
-        border-radius: 16px;
-        padding: 16px 16px 12px;
-        margin: 16px 0 8px;
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        gap: 12px;
-        border: 1px solid #dde6ef;
-    }
-    .stat-item {
-        text-align: center;
-        min-width: 70px;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #5d7184;
-    }
-    .stat-value {
-        font-size: 1.3rem;
-        font-weight: 500;
-        color: #0b2a41;
-        line-height: 1.3;
-    }
-    .stat-value small {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: #6e8aa8;
-        margin-left: 2px;
-    }
-    .canvas-container {
-        position: relative;
-        height: 220px;
-        width: 100%;
-        margin: 8px 0 0;
-    }
-    footer {
-        text-align: center;
-        margin-top: 40px;
-        color: #7e92a5;
-        font-size: 0.85rem;
-    }
-    .loading {
-        text-align: center;
-        padding: 40px;
-        font-size: 1.2rem;
-        color: #2b7fc1;
-    }
-
-  /* 全局样式重置与基础设置 */
-    
-    
-    
-    
-    .container {
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-    
-    /* 动画效果 */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .animate-fade-in {
-      animation: fadeIn 0.5s ease forwards;
-    }
-    
-    /* 组件样式 */
-    .card {
-      background-color: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px -5px rgba(22, 93, 255, 0.08);
-      padding: 24px;
-      margin-bottom: 30px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .card:hover {
-      box-shadow: 0 20px 35px -10px rgba(22, 93, 255, 0.12);
-    }
-    
-    /* 按钮样式 */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: none;
-    }
-    
-    .btn-primary {
-      background-color: #165DFF;
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background-color: #0E4BDB;
-    }
-    
-    /* 标题样式 */
-    .h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #165DFF;
-    }
-    
-    .h2 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .card h2 span {
-      background: #e7edf5;
-      font-size: 0.75rem;
-      font-weight: 400;
-      padding: 2px 10px;
-      border-radius: 30px;
-      color: #2f4b70;
-    }
-    .h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-    
-    /* 下拉选择框样式 */
-    .select-group {
-      margin-bottom: 24px;
-    }
-    
-    .select-label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: #333647;
-    }
-    
-    .select-field {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid #E0E0E0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-      background-color: white;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 16px;
-    }
-    .card {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 6px rgba(0,20,40,0.05);
-      padding: 20px 20px 24px;
-      transition: 0.2s;
-      border: 1px solid #eef2f6;
-      display: flex;
-      flex-direction: column;
-    }
-    .select-field:focus {
-      outline: none;
-      border-color: #165DFF;
-      box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.1);
-    }
-    .stats {
-      background: #f9fcff;
-      border-radius: 16px;
-      padding: 16px 16px 12px;
-      margin: 16px 0 8px;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 12px;
-      border: 1px solid #dde6ef;
-    }
-    /* 提示框样式 */
-    .alert {
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      background-color: rgba(22, 93, 255, 0.05);
-      border-left: 4px solid #165DFF;
-    }
-    
-    .alert p {
-      font-size: 14px;
-      color: #333647;
-    }
-    
-    .alert strong {
-      color: #165DFF;
-    }
-    
-    /* 头部样式 */
-    .header {
-      background-color: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      padding: 16px 0;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      transition: all 0.3s ease;
-    }
-    
-    .header-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .stat-item {
-      text-align: center;
-      min-width: 70px;
-    } 
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    
-    .logo-icon {
-      margin-right: 8px;
-      font-size: 24px;
-      color: #165DFF;
-    }
-    
-    /* 页脚样式 */
-    .footer {
-      background-color: white;
-      border-top: 1px solid #F0F0F0;
-      padding: 24px 0;
-      margin-top: 40px;
-      text-align: center;
-    }
-    
-    .footer-text {
-      font-size: 14px;
-      color: #888888;
-      margin-bottom: 8px;
-    }
-    
-    /* 间距类 */
-    .mt-8 {
-      margin-top: 32px;
-    }
-    
-    .flex {
-      display: flex;
-    }
-    
-    .justify-center {
-      justify-content: center;
-    }
-    
-    /* 隐藏/显示类 */
-    .hidden {
-      display: none;
-    }
-    
-    /* 响应式调整 */
-    @media (max-width: 768px) {
-      .h1 {
-        font-size: 20px;
-      }
-      
-      .h2 {
-        font-size: 18px;
-      }
-      
-      .h3 {
-        font-size: 16px;
-      }
-      
-      .btn {
-        padding: 10px 16px;
-        font-size: 14px;
-      }
-      
-      .card {
-        padding: 16px;
-      }
-    }
-  </style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .page {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .page.active {
+            display: block;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-primary {
+            background: #409eff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3385e5;
+        }
+        .btn-disable {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .btn-back {
+            background: #909399;
+            color: white;
+            margin-top: 20px;
+        }
+        .form-item {
+            margin-bottom: 20px;
+        }
+        .form-item label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-item input, .form-item select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .feature-check {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .chart-box {
+            margin: 20px 0;
+            height: 500px;
+        }
+        .advice-box {
+            padding: 15px;
+            background: #fdf6ec;
+            border-radius: 6px;
+            color: #e6a23c;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .advice-box.hide {
+            display: none;
+        }
+        .tip {
+            color: #f56c6c;
+            margin-top: 10px;
+            display: none;
+        }
+        .tip.show {
+            display: block;
+        }
+        #loading {
+            text-align: center;
+            font-size: 18px;
+            color: #409eff;
+            margin: 20px 0;
+        }
+    </style>
 </head>
-
 <body>
-  <!-- 顶部导航 -->
-  <header class="header" id="header">
     <div class="container">
-      <div class="header-content">
-        <div class="logo">
-          <span class="logo-icon">♥</span>
-          <h1 class="h1">东莞理工学院——健康情况统计系统</h1>
+        <div id="loading">正在加载数据集，请稍候...</div>
+        <!-- 首页 -->
+        <div id="homePage" class="page">
+            <h1 class="title">健康数据查询系统</h1>
+            <div class="btn-group">
+                <button class="btn btn-disable" disabled>录入数据（暂未开放）</button>
+                <button class="btn btn-primary" onclick="showPage('checkPage')">察看数据</button>
+            </div>
         </div>
-      </div>
+
+        <!-- 数据查询页面 -->
+        <div id="checkPage" class="page">
+            <h1 class="title">健康数据查询</h1>
+            <div class="form-item">
+                <label>学号（ID）</label>
+                <input type="text" id="userId" placeholder="请输入学号">
+            </div>
+            <div class="form-item">
+                <label>昵称</label>
+                <input type="text" id="userName" placeholder="请输入昵称">
+            </div>
+            <div class="form-item">
+                <label>选择图表类型</label>
+                <select id="chartType">
+                    <option value="line">折线图（按时间查看特征趋势）</option>
+                    <option value="bar">柱状图（最新数据归一化展示）</option>
+                </select>
+            </div>
+            <!-- 折线图特征选择 -->
+            <div id="featureSelect" class="form-item">
+                <label>选择要查看的特征数据</label>
+                <div class="feature-check">
+                    <div class="feature-item"><input type="checkbox" value="weight" checked>体重(kg)</div>
+                    <div class="feature-item"><input type="checkbox" value="bmi">BMI</div>
+                    <div class="feature-item"><input type="checkbox" value="fat">体脂率</div>
+                    <div class="feature-item"><input type="checkbox" value="bloodSugar">血糖</div>
+                    <div class="feature-item"><input type="checkbox" value="heartRate">心率</div>
+                    <div class="feature-item"><input type="checkbox" value="pressure">压力指数</div>
+                    <div class="feature-item"><input type="checkbox" value="highPressure">血压(高压)</div>
+                    <div class="feature-item"><input type="checkbox" value="lowPressure">血压(低压)</div>
+                </div>
+            </div>
+            <div class="tip" id="errorTip">未匹配到对应学号+昵称，请重新输入！</div>
+            <button class="btn btn-primary" onclick="submitQuery()">确认查询</button>
+            <button class="btn btn-back" onclick="showPage('homePage')">返回首页</button>
+        </div>
+
+        <!-- 图表展示页面 -->
+        <div id="chartPage" class="page">
+            <h1 class="title">健康数据图表</h1>
+            <div class="chart-box">
+                <canvas id="healthChart"></canvas>
+            </div>
+            <div class="advice-box hide" id="adviceBox"></div>
+            <button class="btn btn-back" onclick="returnCheck()">返回查询界面</button>
+        </div>
     </div>
-  </header>
 
-  <!-- 主内容区 -->
-  <main class="container" style="padding: 32px 0;">
-    <!-- 首页选择卡片 -->
-    <section id="select-section" class="animate-fade-in">
-      <div class="card">
-        <div class="flex items-center mb-6">
-          <div style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(22, 93, 255, 0.1); display: flex; align-items: center; justify-content: center; margin-right: 16px;">
-            <span style="color: #165DFF; font-size: 20px;">i</span>
-          </div>
-          <h2 class="h2" style="margin-bottom: 0;">基础信息选择</h2>
-        </div>
-        <p style="color: #666666; margin-bottom: 24px; line-height: 1.8;">
-          请选择想要察看的对象，提交后将为您展示对应的统计数据图。
-        </p>
-        
-        
-        <form id="select-form">
-          <!-- 第一个选择框 -->
-          <div class="select-group">
-            <label for="option1" class="select-label">二级学院</label>
-            <select id="option1" name="option1" class="select-field" required>
-              <option value="" disabled selected>请选择...</option>
-              <option value="smjk">生命健康技术学院</option>
-              <option value="mkszy">马克思主义学院</option>
-              <option value="qt">其他</option>
-            </select>
-          </div>
-          
-          <!-- 第二个选择框 -->
-          <div class="select-group">
-            <label for="option2" class="select-label">调查对象（人群）</label>
-            <select id="option2" name="option2" class="select-field" required>
-              <option value="" disabled selected>请选择...</option>
-              <option value="students">学生</option>
-              <option value="teacher">教师</option>
-            </select>
-          </div>
-          
-          <!-- 第三个选择框 -->
-          <div class="select-group">
-            <label for="option3" class="select-label">统计类型</label>
-            <select id="option3" name="option3" class="select-field" required>
-              <option value="" disabled selected>请选择...</option>
-              <option value="qb">全部统计</option>
-              <option value="sj">随机抽样对比</option>
-            </select>
-          </div>
+    <script>
+        // 全局数据存储
+        let healthData = [];
+        let myChart = null;
 
-          
-          
-<div class="flex justify-center mt-8">
-            <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; font-size: 18px; padding: 12px 32px;">
-              提交 <span style="margin-left: 8px;">→</span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
+        // 页面切换
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.getElementById('errorTip').classList.remove('show');
+        }
 
-    <!-- 模拟跳转页面1 -->
-    <section id="page1" class="hidden page-content animate-fade-in">
-      <div class="card">
-        <h2 class="page-title">生成失败</h2>
-        <p class="page-desc">
-          目标所需数据丢失了<br>
-          请重新选择调查目标或等待数据收集人员将数据恢复
-        </p>
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-1" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 模拟跳转页面2 -->
-    <section id="page2" class="hidden page-content animate-fade-in">
-      <div class="card">
-        <h1>📊 学生健康指标分布</h1>
-        <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
-        <disv class="loading" id="loading">正在加载数据并绘制图表...</disv>
-        <div class="grid" id="chartGrid" style="display: none;grid-template-columns: 1fr; gap: 1rem; width: 100%;"></div>
-        <footer>
-            ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
-        </footer>
-
-        <script>
-            (async function() {
-                // 读取CSV文件
-                const response = await fetch('data/students_data.csv');
-                const csvText = await response.text();
-
-                // 解析CSV
-                const parsed = Papa.parse(csvText, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true
+        // 数据格式化解析函数
+        function parseData(rawText) {
+            healthData = [];
+            const rows = rawText.split('\n');
+            const headers = rows[0].split('\t');
+            for(let i=1; i<rows.length; i++) {
+                if(!rows[i].trim()) continue;
+                const cols = rows[i].split('\t');
+                const item = {};
+                headers.forEach((header, index) => {
+                    item[header] = cols[index] || '';
                 });
-                const rawData = parsed.data;
-
-                // 定义要分析的指标
-                const metrics = [
-                    { 
-                        key: 'age', 
-                        title: '年龄', 
-                        unit: '岁', 
-                        useMedian: true,    // 年龄用中位数
-                        bins: 8,
-                        min: 18, max: 25
-                    },
-                    { 
-                        key: 'weight', 
-                        title: '体重', 
-                        unit: 'kg', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'bmi', 
-                        title: 'BMI', 
-                        unit: '', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'body_fat_percent', 
-                        title: '体脂率', 
-                        unit: '%', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'bp_high', 
-                        title: '收缩压', 
-                        unit: 'mmHg', 
-                        useMedian: true,
-                        bins: 16
-                    },
-                    { 
-                        key: 'bp_low', 
-                        title: '舒张压', 
-                        unit: 'mmHg', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'blood_sugar', 
-                        title: '血糖', 
-                        unit: 'mmol/L', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'heart_rate', 
-                        title: '心率', 
-                        unit: 'bpm', 
-                        useMedian: false,
-                        bins: 16
-                    },
-                    { 
-                        key: 'body_score', 
-                        title: '身体得分', 
-                        unit: '', 
-                        useMedian: false,
-                        bins: 16
-                    }
-                ];
-
-                // 提取每个指标的有效数值
-                const dataByMetric = {};
-                metrics.forEach(m => { dataByMetric[m.key] = []; });
-
-                rawData.forEach(row => {
-                    metrics.forEach(m => {
-                        const val = row[m.key];
-                        if (val != null && !isNaN(val) && val !== '') {
-                            // 过滤明显异常值（可选项，这里不做严格过滤）
-                            dataByMetric[m.key].push(val);
-                        }
-                    });
-                });
-
-                // 辅助函数：标准差
-                function std(arr) {
-                    const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
-                    const sq = arr.map(x=>Math.pow(x-mean,2)).reduce((a,b)=>a+b,0)/arr.length;
-                    return Math.sqrt(sq);
-                }
-
-                // 中位数
-                function median(arr) {
-                    const sorted = [...arr].sort((a,b)=>a-b);
-                    const mid = Math.floor(sorted.length/2);
-                    if (sorted.length % 2 === 0) {
-                        return (sorted[mid-1] + sorted[mid])/2;
-                    } else {
-                        return sorted[mid];
-                    }
-                }
-
-                // 直方图 + 核密度计算
-                function computeHistogramAndDensity(data, binCount = 16) {
-                    if (data.length === 0) return null;
-                    const sorted = [...data].sort((a,b)=>a-b);
-                    const min = sorted[0];
-                    const max = sorted[sorted.length-1];
-                    const range = max - min;
-                    if (range === 0) {
-                        // 所有数据相同
-                        return {
-                            labels: [min.toFixed(2)],
-                            frequencies: [data.length],
-                            density: [data.length]
-                        };
-                    }
-                    const binWidth = range / binCount;
-                    const bins = [];
-                    for (let i = 0; i < binCount; i++) {
-                        const lower = min + i * binWidth;
-                        const upper = (i === binCount-1) ? max + 1e-9 : lower + binWidth;
-                        bins.push({ lower, upper, count: 0 });
-                    }
-                    // 频数统计
-                    for (let val of sorted) {
-                        for (let b of bins) {
-                            if (val >= b.lower && val < b.upper) {
-                                b.count++;
-                                break;
-                            }
-                        }
-                    }
-                    const frequencies = bins.map(b => b.count);
-                    const centers = bins.map(b => (b.lower + b.upper) / 2);
-
-                    // 核密度估计 (高斯核)
-                    const n = data.length;
-                    const sd = std(data);
-                    // Silverman's rule: 1.06 * sd * n^{-1/5}
-                    const h = 1.06 * sd * Math.pow(n, -0.2);
-                    const bandwidth = Math.max(h, 0.1 * range / binCount); // 防止过小
-
-                    const densityRaw = centers.map(x => {
-                        let sum = 0;
-                        for (let d of data) {
-                            const z = (x - d) / bandwidth;
-                            sum += Math.exp(-0.5 * z * z) / (bandwidth * Math.sqrt(2 * Math.PI));
-                        }
-                        return sum / n;
-                    });
-
-                    // 缩放密度至与频数可比：密度 * n * binWidth
-                    const densityScaled = densityRaw.map(d => d * n * binWidth);
-
-                    return {
-                        labels: centers.map(v => v.toFixed(2)),
-                        frequencies: frequencies,
-                        density: densityScaled,
-                        binWidth: binWidth,
-                        min: min,
-                        max: max
-                    };
-                }
-
-                // 隐藏loading，显示网格
-                const loadingDiv = document.getElementById('loading');
-                const grid = document.getElementById('chartGrid');
-                loadingDiv.style.display = 'none';
-                grid.style.display = 'grid';
-
-                // 为每个指标创建卡片
-                metrics.forEach((m, idx) => {
-                    const data = dataByMetric[m.key];
-                    if (data.length === 0) return; // 无数据跳过
-
-                    const hist = computeHistogramAndDensity(data, m.bins);
-                    if (!hist) return;
-
-                    const n = data.length;
-                    const sd = std(data);
-                    const meanVal = data.reduce((a,b)=>a+b,0)/n;
-                    const medianVal = median(data);
-
-                    // 创建卡片元素
-                    const card = document.createElement('div');
-                    card.className = 'card';
-
-                    // 适配修改：卡片样式优化，手机端更紧凑
-                    card.style.padding = '0.8rem';
-                    card.style.marginBottom = '1rem';
-
-                    // 标题
-                    const titleDiv = document.createElement('h2');
-                    titleDiv.innerHTML = `${m.title}分布 <span>${m.unit}</span>`;
-                    titleDiv.style.fontSize = '1.1rem';
-                    titleDiv.style.marginBottom = '0.6rem';
-                    card.appendChild(titleDiv);
-
-                    // 统计信息
-                    const statsDiv = document.createElement('div');
-                    statsDiv.className = 'stats';
-                    statsDiv.style.fontSize = '0.85rem';
-                    statsDiv.style.gap = '0.5rem';
-                    statsDiv.innerHTML = `
-                        <div class="stat-item">
-                            <div class="stat-label">样本数</div>
-                            <div class="stat-value">${n}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">标准差</div>
-                            <div class="stat-value">${sd.toFixed(2)}</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">${m.useMedian ? '中位数' : '均值'}</div>
-                            <div class="stat-value">${(m.useMedian ? medianVal : meanVal).toFixed(2)}</div>
-                        </div>
-                    `;
-                    card.appendChild(statsDiv);
-
-                    // canvas容器
-                    const canvasDiv = document.createElement('div');
-                    canvasDiv.className = 'canvas-container';
-                    canvasDiv.style.height = '200px';
-
-                    const canvas = document.createElement('canvas');
-                    canvas.id = `chart-${m.key}`;
-                    canvasDiv.appendChild(canvas);
-                    card.appendChild(canvasDiv);
-                    grid.appendChild(card);
-
-                    // 绘制图表
-                    const ctx = canvas.getContext('2d');
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: hist.labels,
-                            datasets: [
-                                {
-                                    label: '频数',
-                                    data: hist.frequencies,
-                                    backgroundColor: 'rgba(59, 130, 246, 0.5)',
-                                    borderColor: 'rgba(37, 99, 235, 0.8)',
-                                    borderWidth: 1,
-                                    yAxisID: 'y',
-                                    order: 2
-                                },
-                                {
-                                    label: '核密度',
-                                    data: hist.density,
-                                    type: 'line',
-                                    borderColor: '#e11d48',
-                                    backgroundColor: 'transparent',
-                                    pointRadius: 0,
-                                    borderWidth: 2,
-                                    tension: 0.3,
-                                    yAxisID: 'y',
-                                    order: 1,
-                                    fill: false
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { mode: 'index', 
-                                intersect: false,
-                                bodyFont: { size: 10 },
-                                titleFont: { size: 11 }
-                              }
-                            },
-                            scales: {
-                                x: {
-                                    grid: { display: false },
-                                    title: {
-                                        display: true, 
-                                        text: m.title, 
-                                        color: '#3a5e7a', 
-                                        font: { size: 10 }
-                                    },
-                                    ticks: {
-                                        // 适配修改：X轴刻度字体缩小，避免重叠
-                                        font: { size: 9 },
-                                        maxRotation: 0, // 取消旋转
-                                        autoSkip: true,
-                                        maxTicksLimit: 6 // 限制显示数量
-                                    }
-                                },
-
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: '#e9eef3' },
-                                    title: { display: true, text: '频数', color: '#3a5e7a',font: { size: 10 } },
-                                    ticks: {
-                                                // 适配修改：Y轴刻度字体缩小
-                                                font: { size: 9 }
-                                            }
-                                  }
-                            }
-                        }
-                    });
-                });
-            })();
-        </script>  
-        
-
-
-
-
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-2" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 模拟跳转页面3 -->
-    <section id="page3" class="hidden page-content animate-fade-in">
-      <div class="card">
-        <h1>随机抽取10条学生数据（体重与BMI）</h1>
-        <!-- <button onclick="loadAndPlot()">重新抽取</button>
-        <canvas id="myChart" width="400" height="200"></canvas> -->
-        <!-- 适配修改：按钮样式优化，手机端更易点击 -->
-        <button onclick="loadAndPlot()" style="margin-bottom: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem;">重新抽取</button>
-        <!-- 适配修改：图表容器优化，手机端自适应 -->
-        <div style="width: 100%; height: 280px; margin-bottom: 1rem;">
-            <canvas id="myChart" style="width: 100%; height: 100%;"></canvas>
-        </div>
-
-        <script>
-          // 学生图表专用全局变量
-          let studentChart = null;
-
-          async function loadAndPlot() {
-            try {
-              // 1. 获取CSV文件
-              const response = await fetch('data/students_data.csv');
-              if (!response.ok) throw new Error('学生数据文件加载失败');
-              const csvText = await response.text();
-
-              // 2. 解析CSV
-              Papa.parse(csvText, {
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                  const allData = results.data;
-                  const validData = allData.filter(row => row.weight && row.bmi && row.student_id);
-
-                  // 3. 随机抽取10条
-                  const sampleSize = 10;
-                  const shuffled = validData.sort(() => 0.5 - Math.random());
-                  const selected = shuffled.slice(0, Math.min(sampleSize, validData.length));
-
-                  // 4. 准备图表数据
-                  const labels = selected.map(row => row.student_id);
-                  const weightData = selected.map(row => row.weight);
-                  const bmiData = selected.map(row => row.bmi);
-
-                  // 5. 绘制图表（使用学生专用变量）
-                  const ctx = document.getElementById('myChart').getContext('2d');
-                  if (studentChart) studentChart.destroy(); // 销毁旧图表
-                  studentChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                      labels: labels,
-                      datasets: [
-                        {
-                          label: '体重 (kg)',
-                          data: weightData,
-                          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                          borderColor: 'rgba(54, 162, 235, 1)',
-                          borderWidth: 1
-                        },
-                        {
-                          label: 'BMI',
-                          data: bmiData,
-                          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                          borderColor: 'rgba(255, 99, 132, 1)',
-                          borderWidth: 1
-                        }
-                      ]
-                    },
-                    options: {
-                      responsive: true,
-                      maintainAspectRatio: false, // 适配修改：取消固定宽高比
-                      plugins: {
-                          tooltip: {
-                              // 适配修改：提示框字体缩小
-                              bodyFont: { size: 10 },
-                              titleFont: { size: 11 }
-                          }
-                      },
-                      scales: {
-                        y: { beginAtZero: true, 
-                        title: { 
-                          display: true, 
-                          text: '数值' ,
-                          font: { size: 10 }
-                        },
-                        ticks: {
-                            // 适配修改：刻度字体缩小
-                            font: { size: 9 } }},
-                        x: { 
-                          title: { 
-                            display: true,
-                            text: '学生ID',
-                            font: { size: 10 }
-                          },
-                          ticks: {
-                              // 适配修改：刻度字体缩小，取消旋转
-                              font: { size: 9 },
-                              maxRotation: 0,
-                              autoSkip: true
-                          }
-
-                        }
-                      }
-                    }
-                  });
-                }
-              });
-            } catch (err) {
-              console.error('学生图表加载失败：', err);
-              alert('学生数据加载出错，请检查文件路径！');
+                // 数值格式化
+                item.id = item['学号'];
+                item.name = item['昵称'];
+                item.date = new Date(item['检查日期']);
+                item.weight = parseFloat(item['体重(kg)']);
+                item.bmi = parseFloat(item['BMI']);
+                item.fat = parseFloat(item['体脂率']);
+                item.highPressure = parseInt(item['血压(高压)']);
+                item.lowPressure = parseInt(item['血压(低压)']);
+                item.bloodSugar = parseFloat(item['血糖']);
+                item.heartRate = parseInt(item['心率']);
+                item.pressure = parseInt(item['压力指数']);
+                item.gender = item['性别'];
+                healthData.push(item);
             }
-          }
+        }
 
-          // 页面显示时再加载（避免和教师冲突）
-          document.addEventListener('DOMContentLoaded', function() {
-            // 监听page3显示事件（如果是通过按钮跳转）
-            const page3 = document.getElementById('page3');
-            const observer = new MutationObserver((mutations) => {
-              mutations.forEach(mutation => {
-                if (mutation.attributeName === 'class' && !page3.classList.contains('hidden')) {
-                  loadAndPlot(); // 页面显示时加载学生图表
-                }
-              });
-            });
-            observer.observe(page3, { attributes: true });
-          });
-        </script>      
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-3" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section id="page4" class="hidden page-content animate-fade-in">
-      <div class="card">
-        
-        <h1>📊 教师健康指标分布</h1>
-        <div class="sub">直方图 + 核密度估计 · 数据来自收集人员</div>
-        <div class="loading" id="loading-teacher">正在加载数据并绘制图表...</div>
-        <div class="grid" id="chartGrid-teacher" style="display: none; grid-template-columns: 1fr; gap: 1rem; width: 100%;"></div>
-        <footer>
-            ⚕️ 核密度使用高斯核 · 统计信息基于非空样本
-        </footer>
-
-        <script>
-            (async function() {
-                try {
-                    // 读取CSV文件
-                    const response = await fetch('data/teacher_data.csv');
-                    if (!response.ok) throw new Error(`教师数据加载失败：${response.status}`);
-                    const csvText = await response.text();
-
-                    // 解析CSV
-                    const parsed = Papa.parse(csvText, {
-                        header: true,
-                        dynamicTyping: true,
-                        skipEmptyLines: true
-                    });
-                    const rawData = parsed.data;
-
-                    // 定义要分析的指标（教师，调整年龄范围）
-                    const metrics = [
-                        { 
-                            key: 'age', 
-                            title: '年龄', 
-                            unit: '岁', 
-                            useMedian: true,    
-                            bins: 8,
-                            min: 25, max: 65 // 教师年龄范围更合理
-                        },
-                        { 
-                            key: 'weight', 
-                            title: '体重', 
-                            unit: 'kg', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'bmi', 
-                            title: 'BMI', 
-                            unit: '', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'body_fat_percent', 
-                            title: '体脂率', 
-                            unit: '%', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'bp_high', 
-                            title: '收缩压', 
-                            unit: 'mmHg', 
-                            useMedian: true,
-                            bins: 16
-                        },
-                        { 
-                            key: 'bp_low', 
-                            title: '舒张压', 
-                            unit: 'mmHg', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'blood_sugar', 
-                            title: '血糖', 
-                            unit: 'mmol/L', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'heart_rate', 
-                            title: '心率', 
-                            unit: 'bpm', 
-                            useMedian: false,
-                            bins: 16
-                        },
-                        { 
-                            key: 'body_score', 
-                            title: '身体得分', 
-                            unit: '', 
-                            useMedian: false,
-                            bins: 16
-                        }
-                    ];
-
-                    // 提取每个指标的有效数值
-                    const dataByMetric = {};
-                    metrics.forEach(m => { dataByMetric[m.key] = []; });
-
-                    rawData.forEach(row => {
-                        metrics.forEach(m => {
-                            const val = row[m.key];
-                            if (val != null && !isNaN(val) && val !== '') {
-                                dataByMetric[m.key].push(val);
-                            }
-                        });
-                    });
-
-                    // 辅助函数：标准差
-                    function std(arr) {
-                        const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
-                        const sq = arr.map(x=>Math.pow(x-mean,2)).reduce((a,b)=>a+b,0)/arr.length;
-                        return Math.sqrt(sq);
-                    }
-
-                    // 中位数
-                    function median(arr) {
-                        const sorted = [...arr].sort((a,b)=>a-b);
-                        const mid = Math.floor(sorted.length/2);
-                        if (sorted.length % 2 === 0) {
-                            return (sorted[mid-1] + sorted[mid])/2;
-                        } else {
-                            return sorted[mid];
-                        }
-                    }
-
-                    // 直方图 + 核密度计算
-                    function computeHistogramAndDensity(data, binCount = 16) {
-                        if (data.length === 0) return null;
-                        const sorted = [...data].sort((a,b)=>a-b);
-                        const min = sorted[0];
-                        const max = sorted[sorted.length-1];
-                        const range = max - min;
-                        if (range === 0) {
-                            return {
-                                labels: [min.toFixed(2)],
-                                frequencies: [data.length],
-                                density: [data.length]
-                            };
-                        }
-                        const binWidth = range / binCount;
-                        const bins = [];
-                        for (let i = 0; i < binCount; i++) {
-                            const lower = min + i * binWidth;
-                            const upper = (i === binCount-1) ? max + 1e-9 : lower + binWidth;
-                            bins.push({ lower, upper, count: 0 });
-                        }
-                        // 频数统计
-                        for (let val of sorted) {
-                            for (let b of bins) {
-                                if (val >= b.lower && val < b.upper) {
-                                    b.count++;
-                                    break;
-                                }
-                            }
-                        }
-                        const frequencies = bins.map(b => b.count);
-                        const centers = bins.map(b => (b.lower + b.upper) / 2);
-
-                        // 核密度估计 (高斯核)
-                        const n = data.length;
-                        const sd = std(data);
-                        const h = 1.06 * sd * Math.pow(n, -0.2);
-                        const bandwidth = Math.max(h, 0.1 * range / binCount);
-
-                        const densityRaw = centers.map(x => {
-                            let sum = 0;
-                            for (let d of data) {
-                                const z = (x - d) / bandwidth;
-                                sum += Math.exp(-0.5 * z * z) / (bandwidth * Math.sqrt(2 * Math.PI));
-                            }
-                            return sum / n;
-                        });
-
-                        const densityScaled = densityRaw.map(d => d * n * binWidth);
-
-                        return {
-                            labels: centers.map(v => v.toFixed(2)),
-                            frequencies: frequencies,
-                            density: densityScaled,
-                            binWidth: binWidth,
-                            min: min,
-                            max: max
-                        };
-                    }
-
-                    // 隐藏loading，显示网格
-                    const loadingDiv = document.getElementById('loading-teacher');
-                    const grid = document.getElementById('chartGrid-teacher');
-                    loadingDiv.style.display = 'none';
-                    grid.style.display = 'grid';
-
-                    // 为每个指标创建卡片
-                    metrics.forEach((m, idx) => {
-                        const data = dataByMetric[m.key];
-                        if (data.length === 0) return;
-
-                        const hist = computeHistogramAndDensity(data, m.bins);
-                        if (!hist) return;
-
-                        const n = data.length;
-                        const sd = std(data);
-                        const meanVal = data.reduce((a,b)=>a+b,0)/n;
-                        const medianVal = median(data);
-
-                        // 创建卡片元素
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.style.padding = '0.8rem';
-                        card.style.marginBottom = '1rem';
-
-                        // 标题
-                        const titleDiv = document.createElement('h2');
-                        titleDiv.innerHTML = `${m.title}分布 <span>${m.unit}</span>`;
-                        titleDiv.style.fontSize = '1.1rem';
-                        titleDiv.style.marginBottom = '0.6rem';
-                        card.appendChild(titleDiv);
-
-                        // 统计信息
-                        const statsDiv = document.createElement('div');
-                        statsDiv.className = 'stats';
-                        statsDiv.style.fontSize = '0.85rem';
-                        statsDiv.style.gap = '0.5rem';
-                        statsDiv.innerHTML = `
-                            <div class="stat-item">
-                                <div class="stat-label">样本数</div>
-                                <div class="stat-value">${n}</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">标准差</div>
-                                <div class="stat-value">${sd.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">${m.useMedian ? '中位数' : '均值'}</div>
-                                <div class="stat-value">${(m.useMedian ? medianVal : meanVal).toFixed(2)}</div>
-                            </div>
-                        `;
-                        card.appendChild(statsDiv);
-
-                        // canvas容器
-                        const canvasDiv = document.createElement('div');
-                        canvasDiv.className = 'canvas-container';
-                        canvasDiv.style.height = '200px';
-
-                        const canvas = document.createElement('canvas');
-                        canvas.id = `teacher-chart-${m.key}`; // 教师专属Canvas ID
-                        canvasDiv.appendChild(canvas);
-                        card.appendChild(canvasDiv);
-                        grid.appendChild(card);
-
-                        // 绘制图表
-                        const ctx = canvas.getContext('2d');
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: hist.labels,
-                                datasets: [
-                                    {
-                                        label: '频数',
-                                        data: hist.frequencies,
-                                        backgroundColor: 'rgba(16, 185, 129, 0.5)', // 教师图表用绿色系区分
-                                        borderColor: 'rgba(5, 150, 105, 0.8)',
-                                        borderWidth: 1,
-                                        yAxisID: 'y',
-                                        order: 2
-                                    },
-                                    {
-                                        label: '核密度',
-                                        data: hist.density,
-                                        type: 'line',
-                                        borderColor: '#9333ea', // 紫色核密度线
-                                        backgroundColor: 'transparent',
-                                        pointRadius: 0,
-                                        borderWidth: 2,
-                                        tension: 0.3,
-                                        yAxisID: 'y',
-                                        order: 1,
-                                        fill: false
-                                    }
-                                ]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: {
-                                      mode: 'index', 
-                                      intersect: false ,
-                                      bodyFont: { size: 10 },
-                                      titleFont: { size: 11 }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        grid: { display: false },
-                                        title: { display: true, text: m.title, color: '#3a5e7a',font: { size: 10 } },
-                                        ticks: {
-                                            // 适配修改：刻度字体缩小，取消旋转
-                                            font: { size: 9 },
-                                            maxRotation: 0,
-                                            autoSkip: true,
-                                            maxTicksLimit: 6
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: { color: '#e9eef3' },
-                                        title: { display: true, text: '频数', color: '#3a5e7a',font: { size: 10 } },
-                                        ticks: {
-                                            // 适配修改：刻度字体缩小
-                                            font: { size: 9 }
-                                        } 
-                                    }
-                                }
-                            }
-                        });
-                    });
-                } catch (err) {
-                    console.error('教师健康指标图表加载失败：', err);
-                    document.getElementById('loading-teacher').textContent = `加载失败：${err.message}`;
-                    alert('教师数据加载出错，请检查文件路径或CSV格式！');
-                }
-            })();
-        </script>
-
-
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-4" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section id="page5" class="hidden page-content animate-fade-in">
-      <div class="card"> 
-        <h1>随机抽取10条教师数据（体重与BMI）</h1>
-        <!-- <button onclick="loadAndPlot_teacher()">重新抽取</button>
-        <canvas id="my_teacher" width="400" height="200"></canvas> -->
-        <button onclick="loadAndPlot_teacher()" style="margin-bottom: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem;">重新抽取</button>
-            <!-- 适配修改：图表容器优化 -->
-        <div style="width: 100%; height: 280px; margin-bottom: 1rem;">
-            <canvas id="my_teacher" style="width: 100%; height: 100%;"></canvas>
-        </div>
-        <script>
-          // 教师图表专用全局变量（避免和学生冲突）
-          let teacherChart = null;
-
-          async function loadAndPlot_teacher() {
+        // 异步读取外部数据集文件（核心修改）
+        async function loadExternalData() {
             try {
-              // 1. 获取CSV文件
-              const response = await fetch('data/teacher_data.csv');
-              if (!response.ok) throw new Error('教师数据文件加载失败');
-              const csvText = await response.text();
-
-              // 2. 解析CSV
-              Papa.parse(csvText, {
-                header: true,
-                dynamicTyping: true,
-                complete: function(results) {
-                  const allData = results.data;
-                  // 过滤有效数据
-                  const validData = allData.filter(row => row.weight && row.bmi && row.teacher_id);
-
-                  // 3. 随机抽取10条
-                  const sampleSize = 10;
-                  const shuffled = validData.sort(() => 0.5 - Math.random());
-                  const selected = shuffled.slice(0, Math.min(sampleSize, validData.length));
-
-                  // 4. 准备图表数据
-                  const labels = selected.map(row => row.teacher_id);
-                  const weightData = selected.map(row => row.weight);
-                  const bmiData = selected.map(row => row.bmi);
-
-                  // 5. 绘制图表
-                  const ctx = document.getElementById('my_teacher').getContext('2d');
-                  // 使用教师专用变量销毁旧图表
-                  if (teacherChart) teacherChart.destroy();
-                  teacherChart = new Chart(ctx, { // 存储到教师专用变量
-                    type: 'bar',
-                    data: {
-                      labels: labels,
-                      datasets: [
-                        {
-                          label: '体重 (kg)',
-                          data: weightData,
-                          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                          borderColor: 'rgba(54, 162, 235, 1)',
-                          borderWidth: 1
-                        },
-                        {
-                          label: 'BMI',
-                          data: bmiData,
-                          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                          borderColor: 'rgba(255, 99, 132, 1)',
-                          borderWidth: 1
-                        }
-                      ]
-                    },
-                    options: {
-                      responsive: true,
-                      maintainAspectRatio: false, // 适配修改：取消固定宽高比
-                      plugins: {
-                          tooltip: {
-                              // 适配修改：提示框字体缩小
-                              bodyFont: { size: 10 },
-                              titleFont: { size: 11 }
-                          }
-                      },
-                      scales: {
-                        y: { beginAtZero: true, title: { display: true, text: '数值',font: { size: 10 } },
-                          ticks: {
-                              // 适配修改：刻度字体缩小
-                              font: { size: 9 }
-                          }
-                        },
-                        x: { 
-                            title: { 
-                              display: true, 
-                              text: '教师ID',
-                              font: { size: 10 }
-                            },
-                            ticks: {
-                                // 适配修改：刻度字体缩小，取消旋转
-                                font: { size: 9 },
-                                maxRotation: 0,
-                                autoSkip: true
-                            }
-                        }
-                      }
-                    }
-                  });
-                }
-              });
-            } catch (err) {
-              console.error('教师图表加载失败：', err);
-              alert('教师数据加载出错，请检查文件路径或CSV格式！');
+                // 读取 data 文件夹下的 data_1500.txt
+                const response = await fetch('./data/data_1500.txt');
+                if (!response.ok) throw new Error('数据集文件不存在！');
+                const rawText = await response.text();
+                // 解析数据
+                parseData(rawText);
+                // 加载完成，隐藏提示，显示首页
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('homePage').classList.add('active');
+            } catch (error) {
+                document.getElementById('loading').innerText = `加载失败：${error.message}，请检查文件夹结构！`;
+                document.getElementById('loading').style.color = '#f56c6c';
             }
-          }
+        }
 
-          // 页面显示时加载教师图表（
-          document.addEventListener('DOMContentLoaded', function() {
-            const page5 = document.getElementById('page5');
-            const observer = new MutationObserver((mutations) => {
-              mutations.forEach(mutation => {
-                if (mutation.attributeName === 'class' && !page5.classList.contains('hidden')) {
-                  loadAndPlot_teacher(); // 页面显示时加载教师图表
-                }
-              });
+        // 提交查询
+        function submitQuery() {
+            const userId = document.getElementById('userId').value.trim();
+            const userName = document.getElementById('userName').value.trim();
+            const chartType = document.getElementById('chartType').value;
+            
+            if(!userId || !userName) {
+                document.getElementById('errorTip').innerText = '学号和昵称不能为空！';
+                document.getElementById('errorTip').classList.add('show');
+                return;
+            }
+
+            // 匹配学号+昵称
+            const userData = healthData.filter(item => item.id === userId && item.name === userName);
+            if(userData.length === 0) {
+                document.getElementById('errorTip').innerText = '未匹配到对应学号+昵称，请重新输入！';
+                document.getElementById('errorTip').classList.add('show');
+                return;
+            }
+
+            // 切换到图表页
+            showPage('chartPage');
+            // 绘制图表
+            if(chartType === 'line') {
+                drawLineChart(userData);
+            } else {
+                drawBarChart(userData);
+            }
+        }
+
+        // 绘制折线图（按时间）
+        function drawLineChart(userData) {
+            userData.sort((a,b) => a.date - b.date);
+            const labels = userData.map(item => item.date.toLocaleString());
+            const featureMap = {
+                weight: {name: '体重(kg)', data: []}, bmi: {name: 'BMI', data: []}, fat: {name: '体脂率', data: []},
+                bloodSugar: {name: '血糖', data: []}, heartRate: {name: '心率', data: []}, pressure: {name: '压力指数', data: []},
+                highPressure: {name: '血压(高压)', data: []}, lowPressure: {name: '血压(低压)', data: []}
+            };
+
+            const checkboxes = document.querySelectorAll('#featureSelect input:checked');
+            const selectedFeatures = Array.from(checkboxes).map(cb => cb.value);
+
+            selectedFeatures.forEach(f => {
+                userData.forEach(item => { featureMap[f].data.push(item[f]); });
             });
-            observer.observe(page5, { attributes: true });
-          });
-        </script>
 
+            if(myChart) myChart.destroy();
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            const colors = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#8e44ad', '#1abc9c', '#34495e'];
+            const datasets = selectedFeatures.map((f, index) => ({
+                label: featureMap[f].name,
+                data: featureMap[f].data,
+                borderColor: colors[index % colors.length],
+                backgroundColor: colors[index % colors.length] + '33',
+                fill: false, tension: 0.3
+            }));
 
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-5" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
+            myChart = new Chart(ctx, {
+                type: 'line', data: {labels, datasets},
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { text: '健康数据趋势折线图', display: true, font: { size: 16 } } } }
+            });
+            document.getElementById('adviceBox').classList.add('hide');
+        }
 
-    <!-- 默认页面 -->
-    <section id="default-page" class="hidden page-content animate-fade-in">
-      <div class="card">
-              
-        <h2 class="page-title">生成失败</h2>
-        <p class="page-desc">
-          目标所需数据丢失了<br>
-          请重新选择调查目标或等待目标数据恢复
-        </p>
-        <div class="flex justify-center gap-4">
-          <button id="back-btn-1" class="btn btn-secondary">
-            ← 返回选择页面
-          </button>
-        </div>
-      </div>
-    </section>
-  </main>
-  
-  <footer class="footer">
-    <div class="container">
-      <p class="footer-text">© 2026 健康统计系统 - 本次统计结果仅供参考</p>
-      <p class="footer-text">如有疑问，请咨询数据收集人员</p>
-    </div>
-  </footer>
+        // 绘制柱状图
+        function drawBarChart(userData) {
+            userData.sort((a,b) => b.date - a.date);
+            const latest = userData[0];
+            const featureKeys = ['weight', 'bmi', 'fat', 'bloodSugar', 'heartRate', 'pressure', 'highPressure', 'lowPressure'];
+            const featureNames = ['体重(kg)', 'BMI', '体脂率', '血糖', '心率', '压力指数', '血压(高压)', '血压(低压)'];
+            const maxValues = [100, 40, 0.5, 15, 150, 200, 200, 120];
+            const normData = featureKeys.map((key, index) => latest[key] / maxValues[index]);
 
-  <script>
-    const header = document.getElementById('header');
-    const selectForm = document.getElementById('select-form');
-    
-    // 页面元素引用
-    const selectSection = document.getElementById('select-section');
-    const page1 = document.getElementById('page1');
-    const page2 = document.getElementById('page2');
-    const page3 = document.getElementById('page3');
-    const page4 = document.getElementById('page4');
-    const page5 = document.getElementById('page5');
-    const defaultPage = document.getElementById('default-page');
-    
-    // 返回按钮引用
-    const backBtn1 = document.getElementById('back-btn-1');
-    const backBtn2 = document.getElementById('back-btn-2');
-    const backBtn3 = document.getElementById('back-btn-3');
-    const backBtn4 = document.getElementById('back-btn-4');
-    const backBtn5 = document.getElementById('back-btn-5');
-    const backBtnDefault = document.getElementById('back-btn-default');
-    
-    // 头部滚动效果
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 10) {
-        header.style.padding = '8px 0';
-        header.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-      } else {
-        header.style.padding = '16px 0';
-        header.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
-      }
-    });
+            if(myChart) myChart.destroy();
+            const ctx = document.getElementById('healthChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar', data: { labels: featureNames, datasets: [{ label: '健康特征归一化值', data: normData, backgroundColor: '#409eff' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { text: '最新健康数据柱状图', display: true, font: { size: 16 } } } }
+            });
+            generateAdvice(latest);
+        }
 
-    // 隐藏所有页面，只显示指定页面
-    function showPage(pageId) {
-      // 隐藏所有页面
-      selectSection.classList.add('hidden');
-      page1.classList.add('hidden');
-      page2.classList.add('hidden');
-      page3.classList.add('hidden');
-      page4.classList.add('hidden');
-      page5.classList.add('hidden');
-      defaultPage.classList.add('hidden');
-      
-      // 显示目标页面
-      document.getElementById(pageId).classList.remove('hidden');
-      // 滚动到页面顶部
-      window.scrollTo(0, 0);
-    }
+        // 生成健康建议
+        function generateAdvice(data) {
+            const advice = [];
+            if(data.bmi < 18.5) advice.push('BMI偏低，体型偏瘦，建议增加营养摄入、规律饮食');
+            if(data.bmi > 23.9) advice.push('BMI偏高，体型超重，建议控制饮食、增加运动');
+            
+            if(data.gender === '女') {
+                if(data.fat < 0.2) advice.push('体脂率偏低，女性需维持正常体脂，注意营养');
+                if(data.fat > 0.3) advice.push('体脂率偏高，建议减少高脂食物、增加有氧训练');
+            } else {
+                if(data.fat < 0.1) advice.push('体脂率偏低，男性需补充蛋白质、规律锻炼');
+                if(data.fat > 0.2) advice.push('体脂率偏高，建议减脂塑形、控制热量摄入');
+            }
+            
+            if(data.bloodSugar < 3.9) advice.push('血糖偏低，建议及时补充糖分、规律三餐');
+            if(data.bloodSugar > 6.1) advice.push('血糖偏高，建议低糖饮食、定期监测血糖');
+            if(data.heartRate < 60) advice.push('心率过缓，若无运动习惯建议检查心脏功能');
+            if(data.heartRate > 100) advice.push('心率过速，建议避免熬夜、减少情绪激动');
+            if(data.pressure > 70) advice.push('压力指数偏高，建议放松心情、保证睡眠、适当减压');
+            if(data.highPressure < 90) advice.push('收缩压（高压）偏低，建议增加营养、避免突然站立');
+            if(data.highPressure > 139) advice.push('收缩压（高压）偏高，建议低盐饮食、监测血压');
+            if(data.lowPressure < 60) advice.push('舒张压（低压）偏低，注意休息、补充水分');
+            if(data.lowPressure > 89) advice.push('舒张压（低压）偏高，建议控制体重、规律作息');
 
-    // 提交表单逻辑
-    selectForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      
-      // 获取三个选择框的值
-      const option1 = document.getElementById('option1').value;
-      const option2 = document.getElementById('option2').value;
-      const option3 = document.getElementById('option3').value;
-      
-      // 定义跳转规则（匹配到对应页面ID）
-      let targetPageId = 'default-page';
-      if (option1 === 'mkszy') {
-        targetPageId = 'page1';
-      }else if (option1=== 'qt') {
-        targetPageId = 'page1'; 
-      }else if (option1 === 'smjk' && option2 === 'students' && option3 === 'qb') {
-        targetPageId = 'page2';
-      } else if (option1 === 'smjk' && option2 === 'students' && option3 === 'sj') {
-        targetPageId = 'page3';
-      }else if (option1 === 'smjk' && option2 === 'teacher' && option3 === 'qb') {
-        targetPageId = 'page4';
-      }else if (option1 === 'smjk' && option2 === 'teacher' && option3 === 'sj') {
-        targetPageId = 'page5';
-      }
-      
-      // 显示目标页面
-      showPage(targetPageId);
-    });
+            const adviceBox = document.getElementById('adviceBox');
+            advice.length ? (adviceBox.innerText = '健康建议：' + advice.join('；'), adviceBox.classList.remove('hide')) : adviceBox.classList.add('hide');
+        }
 
-    // 返回按钮点击事件 - 回到选择页面
-    function goBackToSelect() {
-      showPage('select-section');
-      // 重置表单选择
-      selectForm.reset();
-    }
+        // 返回查询页
+        function returnCheck() {
+            showPage('checkPage');
+            if(myChart) myChart.destroy();
+        }
 
-    // 绑定所有返回按钮事件
-    backBtn1.addEventListener('click', goBackToSelect);
-    backBtn2.addEventListener('click', goBackToSelect);
-    backBtn3.addEventListener('click', goBackToSelect);
-    backBtn4.addEventListener('click', goBackToSelect);
-    backBtn5.addEventListener('click', goBackToSelect);
-    backBtnDefault.addEventListener('click', goBackToSelect);
-  </script>
+        // 图表类型切换
+        document.getElementById('chartType').addEventListener('change', function() {
+            document.getElementById('featureSelect').style.display = this.value === 'line' ? 'block' : 'none';
+        });
+
+        // 页面加载时自动读取外部数据
+        window.onload = loadExternalData;
+    </script>
 </body>
 </html>
